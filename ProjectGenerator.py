@@ -146,6 +146,26 @@ services:
         f.write(docker_compose_content)
     print(f"docker-compose.yml creado en {docker_compose_path}")
 
+# Función para compilar el proyecto backend (Maven o Gradle)
+def build_backend_project(maven_or_gradle, install_dir, name):
+    backend_dir = os.path.join(install_dir, name, 'backend')
+    
+    try:
+        if maven_or_gradle == 'maven':
+            print("Compilando el proyecto Spring Boot con Maven (omitiendo tests)...")
+            subprocess.run(["mvn", "clean", "install", "-DskipTests"], cwd=backend_dir, check=True)
+            print("Proyecto Spring Boot compilado correctamente con Maven, sin ejecutar tests.")
+        elif maven_or_gradle == 'gradle':
+            print("Compilando el proyecto Spring Boot con Gradle (omitiendo tests)...")
+            subprocess.run(["gradle", "build", "-x", "test"], cwd=backend_dir, check=True)
+            print("Proyecto Spring Boot compilado correctamente con Gradle, sin ejecutar tests.")
+        else:
+            print(f"Error: tipo de proyecto desconocido: {maven_or_gradle}")
+            exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"Error al compilar el proyecto Spring Boot: {e}")
+        exit(1)
+
 def main():
     # Obtener detalles del proyecto
     project_name = input("Ingresa el nombre del proyecto: ")
@@ -157,10 +177,15 @@ def main():
     # Llamar las funciones
     print(f"Generando el proyecto {project_name}...")
     download_spring_project(project_name, package_name, maven_or_gradle, dependencies, install_dir)
+    
+    # Compilar el proyecto backend
+    build_backend_project(maven_or_gradle, install_dir, project_name)
+    
     create_react_project(project_name, install_dir)
     create_spring_dockerfile(project_name, install_dir, maven_or_gradle)
     create_react_dockerfile(project_name, install_dir)
     create_docker_compose(install_dir, project_name)
+    
     print(f"¡Proyecto '{project_name}' generado con éxito!")
 
 if __name__ == "__main__":
