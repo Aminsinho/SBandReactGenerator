@@ -1,41 +1,34 @@
 #!/bin/bash
 
-# Actualizar Homebrew
-echo "🔄 Actualizando Homebrew..."
-brew update
+# Función para verificar la instalación de un programa
+function check_and_install() {
+    if ! command -v $1 &> /dev/null
+    then
+        echo "$1 no encontrado. Instalando..."
+        $2
+    else
+        echo "$1 ya está instalado."
+    fi
+}
 
-# Instalar Python si no está instalado
-echo "🐍 Verificando instalación de Python..."
-if ! command -v python3 &> /dev/null
-then
-    echo "Python no está instalado. Instalando Python..."
-    brew install python
-else
-    echo "Python ya está instalado"
-fi
+# Instalación de Homebrew si no está presente
+check_and_install "brew" "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
 
-# Verificar si pip está instalado
-echo "🔧 Verificando pip..."
-if ! command -v pip3 &> /dev/null
-then
-    echo "pip no está instalado. Instalando pip..."
-    brew install python
-else
-    echo "pip ya está instalado"
-fi
+# Instalación de Python y pip si no están presentes
+check_and_install "python3" "brew install python"
+check_and_install "pip" "python3 -m ensurepip --upgrade"
 
-# Instalar dependencias necesarias de Python
-echo "🔄 Instalando dependencias de Python..."
-pip3 install requests  # Solo instala requests, sin necesidad de requirements.txt
+# Instalación de Maven si no está presente
+check_and_install "mvn" "brew install maven"
 
-# Instalar pip más reciente (si es necesario)
-echo "🔧 Actualizando pip..."
-python3 -m pip install --upgrade pip
+# Instalación de Docker si no está presente
+check_and_install "docker" "brew install --cask docker"
 
-echo "✅ Dependencias de Python instaladas exitosamente."
+# Verificación de las dependencias de Python
+echo "Instalando dependencias de Python..."
+python3 -m pip install requests
 
-# Ahora ejecutamos el script generador.py para crear el proyecto
-echo "🚀 Ejecutando ProjectGenerator.py para crear el proyecto..."
-python3 ProjectGenerator.py  # Ejecuta el generador de proyectos en Python
+echo "Instalación completada. Ahora se ejecutará el generador de proyectos."
 
-echo "🎉 Proyecto generado exitosamente"
+# Llamar al generador.py
+python3 ProjectGenerator.py
